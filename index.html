@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PP Chat</title>
+<style>
+body { margin:0; background:red; font-family:Arial; }
+
+#chat { height:90vh; overflow:auto; color:white; padding:10px; }
+
+.user { text-align:right; }
+.bot { text-align:left; }
+
+#box {
+  position:fixed;
+  bottom:0;
+  width:100%;
+  background:black;
+  display:flex;
+}
+
+input {
+  flex:1;
+  padding:15px;
+  background:black;
+  color:white;
+  border:none;
+}
+
+button {
+  padding:15px;
+  background:black;
+  color:white;
+  border:none;
+}
+</style>
+</head>
+
+<body>
+
+<div id="chat"></div>
+
+<div id="box">
+  <input id="msg" placeholder="Ask..." />
+  <button onclick="send()">Send</button>
+</div>
+
+<script>
+let allMessages = [];
+
+async function send() {
+  let input = document.getElementById("msg");
+  let text = input.value;
+
+  if (!text) return;
+
+  show(text, "user");
+  allMessages.push({ role: "user", content: text });
+
+  input.value = "";
+
+  let res = await fetch("/api/chat", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ messages: allMessages })
+  });
+
+  let data = await res.json();
+
+  show(data.reply, "bot");
+  allMessages.push({ role: "assistant", content: data.reply });
+}
+
+function show(text, type) {
+  let chat = document.getElementById("chat");
+  let div = document.createElement("div");
+  div.className = type;
+  div.innerText = text;
+  chat.appendChild(div);
+}
+</script>
+
+</body>
+</html>
